@@ -2,11 +2,15 @@ cloned from https://github.com/diskfs/go-diskfs
 
 purpose: test if it supports ext3/ext4.
 
+[fat32]
+
 with an image that has fat32 file system, things work fine:
 Take a look at the test func TestRead, which reads an image with fat32 file system
 
-# ➜  go-diskfs git:(master) go test diskfs_test.go   
+ ➜  go-diskfs git:(master) go test diskfs_test.go   
 ok  	command-line-arguments	0.066s
+
+[ext4]
 
 However, if we switch the image to a ubuntu image, http://cloud-images.ubuntu.com/minimal/releases/disco/release-20190417/ubuntu-19.04-minimal-cloudimg-amd64.img, the test failed.
 This means it does not apply to ubuntu image. 
