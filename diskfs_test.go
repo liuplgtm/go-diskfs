@@ -3,6 +3,7 @@ package diskfs_test
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -39,6 +40,47 @@ func tmpDisk(source string) (*os.File, error) {
 	}
 
 	return f, nil
+}
+
+func TestRead(t *testing.T) {
+	// added by liupen for testing if godiskfs supports ext3/ext4.
+	f, err := tmpDisk("./filesystem/fat32/testdata/fat32.img") // ./filesystem/fat32/testdata/fat32.img
+	if err != nil {
+		t.Fatalf("Error creating new temporary disk: %v", err)
+	}
+	defer f.Close()
+	path := f.Name()
+	defer os.Remove(path)
+	fileInfo, err := f.Stat()
+	if err != nil {
+		t.Fatalf("Unable to stat temporary file %s: %v", path, err)
+	}
+	size := fileInfo.Size()
+
+	tests := []struct {
+		path string
+		disk *disk.Disk
+		err  error
+	}{
+		{path, &disk.Disk{Type: disk.File, LogicalBlocksize: 512, PhysicalBlocksize: 512, Size: size}, nil},
+	}
+
+	for _, tt := range tests {
+		disk, err := diskfs.Open(tt.path)
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Println(disk.GetPartitionTable())
+		fs, err := disk.GetFilesystem(0) // assuming it is the whole disk, so partition = 0
+		if err != nil {
+			log.Panic(err)
+		}
+		files, err := fs.ReadDir("/") // this should list everything
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Println(files)
+	}
 }
 
 func TestOpen(t *testing.T) {
